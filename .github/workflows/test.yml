@@ -37,4 +37,8 @@ jobs:
       run: |
         python -c "import latestocr.__init__; print('Imports successful')"
 
+    - name: Run performance tests
+      run: |
+        python -m pytest test_performance.py -v
+
   
