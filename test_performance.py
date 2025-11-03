@@ -27,7 +27,7 @@ def test_performance_metrics():
                         "Url": url_b64,
                         "SasToken": sas_token
                     }
-                } for i in range(10)
+                } 
             ]
         }
         print(mock_data)
@@ -41,7 +41,7 @@ def test_performance_metrics():
                         "Url": "bW9ja191cmw=",  # base64 for "mock_url"
                         "SasToken": "?sas=mock"
                     }
-                } for i in range(10)
+                }
             ]
         }
 
