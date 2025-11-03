@@ -52,11 +52,15 @@ jobs:
         if [ -f "tests/test_metrics.json" ]; then
           echo "## Test Metrics Summary"
           cat tests/test_metrics.json
+        else
+          echo "No metrics file generated"
         fi
 
     - name: Upload metrics artifact
+      if: always()
       uses: actions/upload-artifact@v4
       with:
         name: test-metrics
         path: tests/test_metrics.json
+        if-no-files-found: ignore
         retention-days: 30
