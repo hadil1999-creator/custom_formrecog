@@ -56,6 +56,7 @@ class TestMetrics(unittest.TestCase):
                     ]
                 }
 
+
                 # Measure execution time
                 start_time = time.time()
                 response = main(mock_req)
