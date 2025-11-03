@@ -39,10 +39,22 @@ class TestRealAzureMetrics(unittest.TestCase):
         if not self.test_document_url:
             self.skipTest("TEST_DOCUMENT_URL environment variable not set")
 
-        # Encode the URL for the function (as it expects base64 + SAS token)
-        url_bytes = self.test_document_url.encode('utf-8')
-        self.encoded_url = base64.b64encode(url_bytes).decode('utf-8')
-        self.sas_token = ""  # Add SAS token if needed
+        # For SAS URLs, the URL already includes the SAS token in the query string
+        # The function expects the URL and SAS token separately
+        # Example: https://storage.blob.core.windows.net/container/file.pdf?sas=token
+
+        if '?' in self.test_document_url:
+            # Split URL and SAS token
+            base_url, sas_part = self.test_document_url.split('?', 1)
+            self.encoded_url = base64.b64encode(base_url.encode('utf-8')).decode('utf-8')
+            self.sas_token = sas_part  # This will be "?sas=token"
+            print(f"Split URL: {base_url}")
+            print(f"SAS token: {self.sas_token}")
+        else:
+            # No SAS token, use URL as-is
+            self.encoded_url = base64.b64encode(self.test_document_url.encode('utf-8')).decode('utf-8')
+            self.sas_token = ""
+            print(f"No SAS token found in URL: {self.test_document_url}")
 
     def test_real_azure_latency(self):
         """Test actual Azure Form Recognizer API latency with real document."""
