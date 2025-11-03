@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ main ]
 
+env:
+  USE_REAL_AZURE: ${{ secrets.USE_REAL_AZURE || 'false' }}
+  FR_ENDPOINT: ${{ secrets.FR_ENDPOINT }}
+  FR_ENDPOINT_KEY: ${{ secrets.FR_ENDPOINT_KEY }}
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -31,3 +35,28 @@ jobs:
     - name: Test imports
       run: |
         python -c "import latestocr.__init__; print('Imports successful')"
+
+    - name: Run metrics tests
+      run: |
+        echo "Starting metrics tests at $(date)"
+        start_time=$(date +%s)
+        python -m pytest tests/test_metrics.py -v --tb=short --durations=0
+        end_time=$(date +%s)
+        duration=$((end_time - start_time))
+        echo "Total test execution time: ${duration} seconds"
+        echo "TEST_DURATION=${duration}" >> $GITHUB_ENV
+
+    - name: Display metrics summary
+      run: |
+        echo "Test execution completed. Metrics logged above."
+        if [ -f "tests/test_metrics.json" ]; then
+          echo "## Test Metrics Summary"
+          cat tests/test_metrics.json
+        fi
+
+    - name: Upload metrics artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-metrics
+        path: tests/test_metrics.json
+        retention-days: 30
