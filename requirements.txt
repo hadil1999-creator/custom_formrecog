@@ -6,6 +6,6 @@ azure-functions
 requests
 pybase64
 pytest
-azure-ai-formrecognizer
+azure-ai-formrecognizer>=3.3.0
 azureml-core
 azureml.pipeline

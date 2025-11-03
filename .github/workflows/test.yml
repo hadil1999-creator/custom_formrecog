@@ -37,46 +37,4 @@ jobs:
       run: |
         python -c "import latestocr.__init__; print('Imports successful')"
 
-    - name: Run metrics tests
-      run: |
-        echo "Starting metrics tests at $(date)"
-        echo "USE_REAL_AZURE: $USE_REAL_AZURE"
-        echo "FR_ENDPOINT: $FR_ENDPOINT"
-        echo "FR_ENDPOINT_KEY: [HIDDEN]"
-        echo "TEST_DOCUMENT_URL: [HIDDEN]"
-        start_time=$(date +%s)
-
-        # Skip basic metrics tests - only run real Azure tests for accurate measurements
-        # python -m pytest tests/test_metrics.py -v --tb=short --durations=0
-
-        # Run real Azure tests - these provide actual performance metrics
-        echo "Running real Azure API tests..."
-        python -m pytest tests/test_real_azure.py -v --tb=short --durations=0 -s
-
-        # Save final metrics after all tests complete
-        echo "Saving final metrics..."
-        python -c "import sys; sys.path.append('.'); from tests.metrics_collector import metrics_collector; import json; summary = metrics_collector.get_summary(); open('tests/test_metrics.json', 'w').write(json.dumps(summary, indent=2)); print('Final metrics saved to tests/test_metrics.json'); print('Summary:', json.dumps(summary, indent=2)); print('DEBUG - Raw metrics:', metrics_collector.metrics)"
-
-        end_time=$(date +%s)
-        duration=$((end_time - start_time))
-        echo "Total test execution time: ${duration} seconds"
-        echo "TEST_DURATION=${duration}" >> $GITHUB_ENV
-
-    - name: Display metrics summary
-      run: |
-        echo "Test execution completed. Metrics logged above."
-        if [ -f "tests/test_metrics.json" ]; then
-          echo "## Test Metrics Summary"
-          cat tests/test_metrics.json
-        else
-          echo "No metrics file generated"
-        fi
-
-    - name: Upload metrics artifact
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: test-metrics
-        path: tests/test_metrics.json
-        if-no-files-found: ignore
-        retention-days: 30
+  
