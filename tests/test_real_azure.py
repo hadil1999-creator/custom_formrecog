@@ -24,6 +24,9 @@ class TestRealAzureMetrics(unittest.TestCase):
         self.endpoint = os.environ.get("FR_ENDPOINT")
         self.key = os.environ.get("FR_ENDPOINT_KEY")
 
+        print(f"Real Azure test setup - FR_ENDPOINT: {self.endpoint}")
+        print(f"Real Azure test setup - FR_ENDPOINT_KEY: {'[SET]' if self.key else '[NOT SET]'}")
+
         if not self.endpoint or not self.key:
             self.skipTest("Azure credentials not provided")
 
@@ -31,6 +34,8 @@ class TestRealAzureMetrics(unittest.TestCase):
         # Option 1: Upload a test PDF/image to Azure Blob Storage and get SAS URL
         # Option 2: Use a publicly accessible test document
         self.test_document_url = os.environ.get("TEST_DOCUMENT_URL")
+        print(f"Real Azure test setup - TEST_DOCUMENT_URL: {'[SET]' if self.test_document_url else '[NOT SET]'}")
+
         if not self.test_document_url:
             self.skipTest("TEST_DOCUMENT_URL environment variable not set")
 

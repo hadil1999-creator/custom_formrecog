@@ -40,18 +40,18 @@ jobs:
     - name: Run metrics tests
       run: |
         echo "Starting metrics tests at $(date)"
+        echo "USE_REAL_AZURE: $USE_REAL_AZURE"
+        echo "FR_ENDPOINT: $FR_ENDPOINT"
+        echo "FR_ENDPOINT_KEY: [HIDDEN]"
+        echo "TEST_DOCUMENT_URL: [HIDDEN]"
         start_time=$(date +%s)
 
-        # Run basic metrics tests (mocks)
+        # Run basic metrics tests
         python -m pytest tests/test_metrics.py -v --tb=short --durations=0
 
-        # Run real Azure tests if credentials provided and TEST_DOCUMENT_URL is set
-        if [ -n "$TEST_DOCUMENT_URL" ]; then
-          echo "Running real Azure API tests..."
-          python -m pytest tests/test_real_azure.py -v --tb=short --durations=0
-        else
-          echo "Skipping real Azure tests - TEST_DOCUMENT_URL not provided"
-        fi
+        # Always try to run real Azure tests - let the test decide if it should skip
+        echo "Attempting to run real Azure API tests..."
+        python -m pytest tests/test_real_azure.py -v --tb=short --durations=0 -s
 
         end_time=$(date +%s)
         duration=$((end_time - start_time))

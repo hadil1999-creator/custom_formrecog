@@ -27,6 +27,10 @@ class TestMetrics(unittest.TestCase):
         # Track if we're using real Azure services
         self.use_real_azure = os.environ.get("USE_REAL_AZURE", "false").lower() == "true"
 
+        print(f"Test setup - USE_REAL_AZURE: {self.use_real_azure}")
+        print(f"Test setup - FR_ENDPOINT: {self.endpoint[:50]}...")
+        print(f"Test setup - FR_ENDPOINT_KEY: {'[SET]' if self.key != 'test-key' else '[DEFAULT]'}")
+
     @unittest.skipUnless(AZURE_FUNCTIONS_AVAILABLE, "Azure Functions not available")
     def test_function_execution_time(self):
         if not self.use_real_azure:
