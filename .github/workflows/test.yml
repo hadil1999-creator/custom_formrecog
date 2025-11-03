@@ -68,8 +68,13 @@ jobs:
         if [ -f "tests/test_metrics.json" ]; then
           echo "## Test Metrics Summary"
           cat tests/test_metrics.json
+          # Save metrics summary to a text file
+          echo "Test execution completed. Metrics logged above." > metrics_summary.txt
+          echo "" >> metrics_summary.txt
+          echo "## Test Metrics Summary" >> metrics_summary.txt
+          cat tests/test_metrics.json >> metrics_summary.txt
         else
-          echo "No metrics file generated"
+          echo "No metrics file generated" > metrics_summary.txt
         fi
 
     - name: Upload metrics artifact
@@ -77,6 +82,8 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: test-metrics
-        path: tests/test_metrics.json
+        path: |
+          tests/test_metrics.json
+          metrics_summary.txt
         if-no-files-found: ignore
         retention-days: 30
