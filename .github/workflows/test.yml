@@ -53,6 +53,19 @@ jobs:
         echo "Attempting to run real Azure API tests..."
         python -m pytest tests/test_real_azure.py -v --tb=short --durations=0 -s
 
+        # Save final metrics after all tests complete
+        echo "Saving final metrics..."
+        python -c "
+from tests.metrics_collector import metrics_collector
+import json
+summary = metrics_collector.get_summary()
+with open('tests/test_metrics.json', 'w') as f:
+    json.dump(summary, f, indent=2)
+print('Final metrics saved to tests/test_metrics.json')
+print('Final metrics summary:')
+print(json.dumps(summary, indent=2))
+"
+
         end_time=$(date +%s)
         duration=$((end_time - start_time))
         echo "Total test execution time: ${duration} seconds"
