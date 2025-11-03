@@ -89,4 +89,11 @@ class TestRealAzureMetrics(unittest.TestCase):
         print(f"Average time per document: {total_time/document_count:.4f} seconds")
 
 if __name__ == '__main__':
+    # Add some sample metrics for standalone testing
+    print("Adding sample metrics for testing...")
+    from metrics_collector import metrics_collector
+    metrics_collector.record_execution_time(1.0, 3.5)  # 2.5 seconds
+    metrics_collector.record_api_latency(2.1)
+    metrics_collector.increment_request_count()
+
     unittest.main(verbosity=2)

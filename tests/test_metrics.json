@@ -1,8 +1,8 @@
 {
-  "total_requests": 1,
-  "avg_execution_time": 0,
-  "avg_api_latency": 0,
-  "max_execution_time": 0,
-  "min_execution_time": 0,
-  "estimated_cost": 0.0075
+  "total_requests": 2,
+  "avg_execution_time": 1.75,
+  "avg_api_latency": 1.0,
+  "max_execution_time": 2.0,
+  "min_execution_time": 1.5,
+  "estimated_cost": 0.0
 }

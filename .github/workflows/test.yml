@@ -10,6 +10,7 @@ env:
   USE_REAL_AZURE: ${{ secrets.USE_REAL_AZURE || 'false' }}
   FR_ENDPOINT: ${{ secrets.FR_ENDPOINT }}
   FR_ENDPOINT_KEY: ${{ secrets.FR_ENDPOINT_KEY }}
+  TEST_DOCUMENT_URL: ${{ secrets.TEST_DOCUMENT_URL }}
 jobs:
   test:
     runs-on: ubuntu-latest
