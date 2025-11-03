@@ -71,6 +71,10 @@ def read(endpoint, key, recordId, data):
 
 import logging
 import json
+import os
+import logging
+from json import JSONEncoder
+import os
 import azure.functions as func
 import base64
 from azure.ai.formrecognizer import DocumentAnalysisClient
@@ -102,7 +106,7 @@ def compose_response(json_data):
     endpoint = os.environ["FR_ENDPOINT"]
     key = os.environ["FR_ENDPOINT_KEY"]
     for value in values:
-        output_record = read(endpoint=endpoint, key=key, recordId=value["recordId"], data=value["data"])
+        output_record = read(endpoint, key, value["recordId"], value["data"])
         results["values"].append(output_record)
     return json.dumps(results, ensure_ascii=False)
 
@@ -117,6 +121,9 @@ def read(endpoint, key, recordId, data):
         elif len(data["Url"]) % 4 == 3:
             docUrl = base64.b64decode(data["Url"]+"==").decode('utf-8')[:-1]+ data["SasToken"]
 
+        # Set up alerts for schema mismatch
+        from azure.ai.formrecognizer import SchemaMismatchAlert
+
         document_analysis_client = DocumentAnalysisClient(endpoint=endpoint, credential=AzureKeyCredential(key))
         poller = document_analysis_client.begin_analyze_document_from_url("prebuilt-read", docUrl)
         result = poller.result()
@@ -124,24 +131,9 @@ def read(endpoint, key, recordId, data):
             "recordId": recordId,
             "data": {"text": result.content}
         }
-        
-        # Check for data drift and retrain the model if necessary
-        if is_data_drift(result):
-            retrain_model(endpoint, key)
-
     except Exception as error:
         output_record = {
             "recordId": recordId,
             "errors": [ { "message": "Error: " + str(error) }   ] 
         }
     return output_record
-
-def is_data_drift(result):
-    # Implement your data drift detection logic here
-    # For example, you can compare the result with a baseline or a previous model's predictions
-    pass
-
-def retrain_model(endpoint, key):
-    # Implement your model retraining logic here
-    # For example, you can retrain the model using Azure Machine Learning or other ML services
-    pass
