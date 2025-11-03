@@ -79,7 +79,7 @@ from azure.ai.formrecognizer import DocumentAnalysisClient
 from azure.core.credentials import AzureKeyCredential
 import azureml.core
 from azureml.pipeline.steps import PythonScriptStep
-from azureml.pipeline.pipelines import Pipeline
+from azureml.pipeline import Pipeline
 
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
