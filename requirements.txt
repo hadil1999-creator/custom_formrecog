@@ -8,3 +8,4 @@ pybase64
 pytest
 azure-ai-formrecognizer
 azureml-core
+azureml.pipeline
