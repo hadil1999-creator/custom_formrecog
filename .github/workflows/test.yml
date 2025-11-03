@@ -40,7 +40,18 @@ jobs:
       run: |
         echo "Starting metrics tests at $(date)"
         start_time=$(date +%s)
+
+        # Run basic metrics tests (mocks)
         python -m pytest tests/test_metrics.py -v --tb=short --durations=0
+
+        # Run real Azure tests if credentials provided and TEST_DOCUMENT_URL is set
+        if [ -n "$TEST_DOCUMENT_URL" ]; then
+          echo "Running real Azure API tests..."
+          python -m pytest tests/test_real_azure.py -v --tb=short --durations=0
+        else
+          echo "Skipping real Azure tests - TEST_DOCUMENT_URL not provided"
+        fi
+
         end_time=$(date +%s)
         duration=$((end_time - start_time))
         echo "Total test execution time: ${duration} seconds"
