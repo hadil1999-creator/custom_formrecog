@@ -73,117 +73,69 @@ def read(endpoint, key, recordId, data):
 import logging
 import json
 import os
-import base64
 import azure.functions as func
+import base64
 from azure.ai.formrecognizer import DocumentAnalysisClient
 from azure.core.credentials import AzureKeyCredential
-import azureml.core
+from azureml.core import Workspace
 from azureml.pipeline.steps import PythonScriptStep
-from azureml.pipeline import Pipeline
+from azureml.pipeline.pipelines import Pipeline
+from azureml.core import Workspace
+ws = Workspace.from_config()
+pipeline = Pipeline(workspace=ws, steps=[])
 
 
-def main(req: func.HttpRequest) -> func.HttpResponse:
-    try:
-        body = json.dumps(req.get_json())
-        logging.info("body: " + body)
-        if body:
-            result = compose_response(body, rate_limit=True)
-            logging.info("Result to return to custom skill: " + result)
-            return func.HttpResponse(result, mimetype="application/json")
-        else:
-            return func.HttpResponse("Invalid body", status_code=400)
-    except ValueError:
-        return func.HttpResponse("Invalid body", status_code=400)
-
-
-# Define Azure ML pipeline for batch processing
-pipeline = Pipeline()
+# Define step for processing data in batches
 step = PythonScriptStep(
     name="read",
-    script_name="read.py",  # assumes file named 'read.py' containing read() function
-    inputs=[azureml.input.DatasetFile("input_data")],
-    outputs=[azureml.output.DatasetFile("output_data")],
+    script_name="read.py",  # assumes a file named 'read.py' containing the read function
+    inputs=[azureml.input.DatasetFile("input_data")],  # input dataset
+    outputs=[azureml.output.DatasetFile("output_data")],  # output dataset
 )
-step.run_min_instances = 1
+
+step.run_min_instances = 1  # Set the minimum number of instances to run in parallel
+
+# Add the step to the pipeline
 pipeline.append(step)
 
-
-def compose_response(json_data, rate_limit=False):
+# Define a function to process data in batches using the pipeline
+def compose_response(json_data):
     values = json.loads(json_data)['values']
-    results = {"values": []}
+    results = {}
+    results["values"] = []
     endpoint = os.environ["FR_ENDPOINT"]
     key = os.environ["FR_ENDPOINT_KEY"]
-
-    # Run Azure ML pipeline (optional batch processing)
+    
+    # Create an instance of the pipeline and run it on the input data
     pipeline_run = pipeline.run(min_instances=1, inputs=[azureml.input.DatasetFile("input_data")])
     output_dataset = pipeline_run.get_output_dataset("output_data")
-
+    
     for value in values:
-        output_record = read(
-            endpoint=endpoint,
-            key=key,
-            recordId=value["recordId"],
-            data=value["data"],
-            rate_limit=rate_limit
-        )
+        output_record = read(endpoint=endpoint, key=key, recordId=value["recordId"], data=value["data"])
         results["values"].append(output_record)
-
+    
     return json.dumps(results, ensure_ascii=False)
 
-
-def read(endpoint, key, recordId, data, rate_limit=False):
+def read(endpoint, key, recordId, data):
     try:
-        url = data["Url"]
-        token = data["SasToken"]
-
-        # Fix Base64 padding errors
-        padding = len(url) % 4
-        if padding == 0:
-            docUrl = base64.b64decode(url).decode('utf-8')[:-1] + token
-        elif padding == 1:
-            docUrl = base64.b64decode(url[:-1]).decode('utf-8') + token
-        elif padding == 2:
-            docUrl = base64.b64decode(url + "=").decode('utf-8') + token
-        else:
-            docUrl = base64.b64decode(url + "==").decode('utf-8')[:-1] + token
-
-        # Schema mismatch alert (placeholder import)
-        from azure.ai.formrecognizer import SchemaMismatchAlert
-
-        # Initialize Form Recognizer client
-        document_analysis_client = DocumentAnalysisClient(
-            endpoint=endpoint, credential=AzureKeyCredential(key)
-        )
-
-        # Apply rate limit if enabled
-        if rate_limit:
-            logging.info("Rate limiting enabled for Form Recognizer requests.")
-
-        # Analyze document
+        if len(data["Url"]) % 4 == 0:
+            docUrl = base64.b64decode(data["Url"]).decode('utf-8')[:-1] + data["SasToken"]
+        elif len(data["Url"]) % 4 == 1:
+            docUrl = base64.b64decode(data["Url"][:-1]).decode('utf-8') + data["SasToken"]
+        elif len(data["Url"]) % 4 == 2:
+            docUrl = base64.b64decode(data["Url"]+"=").decode('utf-8') + data["SasToken"]
+        elif len(data["Url"]) % 4 == 3:
+            docUrl = base64.b64decode(data["Url"]+"==").decode('utf-8')[:-1]+ data["SasToken"]
+        document_analysis_client = DocumentAnalysisClient(endpoint=endpoint, credential=AzureKeyCredential(key))
         poller = document_analysis_client.begin_analyze_document_from_url("prebuilt-read", docUrl)
         result = poller.result()
-        output_record = {"recordId": recordId, "data": {"text": result.content}}
-
-        # Check for data drift
-        if is_data_drift(result):
-            retrain_model(endpoint, key)
-
+        output_record = {
+            "recordId": recordId,
+            "data": {"text": result.content}
+        }
     except Exception as error:
         output_record = {
             "recordId": recordId,
-            "errors": [{"message": "Error: " + str(error)}]
+            "errors": [ { "message": "Error: " + str(error) }   ] 
         }
-
     return output_record
-
-
-def is_data_drift(result):
-    # Implement your data drift detection logic here
-    # For example, you can compare the result with a baseline or a previous model's predictions
-    pass
-
-
-def retrain_model(endpoint, key):
-    # Implement your model retraining logic here
-    # For example, retrain using Azure Machine Learning or another ML service
-    pass
