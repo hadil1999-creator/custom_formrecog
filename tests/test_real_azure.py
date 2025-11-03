@@ -59,6 +59,9 @@ class TestRealAzureMetrics(unittest.TestCase):
 
         print(f"Real Azure API latency: {latency:.4f} seconds")
 
+        # Calculate cost based on actual API call (assume 5 pages per document)
+        metrics_collector.calculate_cost(5)
+
         # Verify response structure
         self.assertEqual(output["recordId"], "real-test-1")
         if "data" in output:
@@ -90,8 +93,13 @@ class TestRealAzureMetrics(unittest.TestCase):
         total_end_time = time.time()
         total_time = total_end_time - total_start_time
 
+        # Calculate total cost for all documents
+        total_pages = document_count * 5  # Assume 5 pages per document
+        metrics_collector.calculate_cost(total_pages)
+
         print(f"Processed {document_count} documents in {total_time:.4f} seconds")
         print(f"Average time per document: {total_time/document_count:.4f} seconds")
+        print(f"Total estimated cost: ${metrics_collector.metrics['total_cost']:.4f}")
 
 if __name__ == '__main__':
     # Add some sample metrics for standalone testing

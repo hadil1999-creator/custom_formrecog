@@ -141,6 +141,12 @@ class TestMetrics(unittest.TestCase):
             self.skipTest("Skipping latency test with real Azure - requires valid document URL")
 
     def test_cost_calculation(self):
+        # Clear previous metrics to start fresh
+        metrics_collector.metrics["execution_times"].clear()
+        metrics_collector.metrics["api_latencies"].clear()
+        metrics_collector.metrics["request_count"] = 0
+        metrics_collector.metrics["total_cost"] = 0.0
+
         # Add some test data to the metrics collector
         metrics_collector.record_execution_time(1.0, 2.5)  # 1.5 seconds
         metrics_collector.record_execution_time(2.0, 4.0)  # 2.0 seconds
@@ -158,12 +164,12 @@ class TestMetrics(unittest.TestCase):
         # Verify cost is calculated correctly
         expected_cost = (total_pages / 1000) * 1.50
         self.assertEqual(cost, expected_cost)
-        self.assertGreaterEqual(cost, 0)
+        self.assertGreater(cost, 0)  # Cost should be greater than 0
 
         # Verify metrics are recorded
-        self.assertGreater(metrics_collector.metrics["request_count"], 0)
-        self.assertGreater(len(metrics_collector.metrics["execution_times"]), 0)
-        self.assertGreater(len(metrics_collector.metrics["api_latencies"]), 0)
+        self.assertEqual(metrics_collector.metrics["request_count"], 2)
+        self.assertEqual(len(metrics_collector.metrics["execution_times"]), 2)
+        self.assertEqual(len(metrics_collector.metrics["api_latencies"]), 2)
 
     def test_azure_usage_cost_query(self):
         # Test Azure usage query (will return 0.0 without proper credentials)
@@ -171,14 +177,12 @@ class TestMetrics(unittest.TestCase):
         self.assertGreaterEqual(cost, 0)
 
 if __name__ == '__main__':
-    # Add some sample metrics for testing
-    print("Adding sample metrics for testing...")
-    metrics_collector.record_execution_time(1.0, 2.5)  # 1.5 seconds
-    metrics_collector.record_execution_time(2.0, 4.0)  # 2.0 seconds
-    metrics_collector.record_api_latency(1.2)
-    metrics_collector.record_api_latency(0.8)
-    metrics_collector.increment_request_count()
-    metrics_collector.increment_request_count()
+    # Clear metrics before running tests to start fresh
+    print("Clearing previous metrics...")
+    metrics_collector.metrics["execution_times"].clear()
+    metrics_collector.metrics["api_latencies"].clear()
+    metrics_collector.metrics["request_count"] = 0
+    metrics_collector.metrics["total_cost"] = 0.0
 
     # Run tests and collect metrics
     unittest.main(verbosity=2)
