@@ -178,13 +178,6 @@ class TestMetrics(unittest.TestCase):
         self.assertGreaterEqual(cost, 0)
 
 if __name__ == '__main__':
-    # Clear metrics before running tests to start fresh
-    print("Clearing previous metrics...")
-    metrics_collector.metrics["execution_times"].clear()
-    metrics_collector.metrics["api_latencies"].clear()
-    metrics_collector.metrics["request_count"] = 0
-    metrics_collector.metrics["total_cost"] = 0.0
-
     # Run tests and collect metrics
     unittest.main(verbosity=2)
 

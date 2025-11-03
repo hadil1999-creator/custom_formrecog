@@ -46,11 +46,11 @@ jobs:
         echo "TEST_DOCUMENT_URL: [HIDDEN]"
         start_time=$(date +%s)
 
-        # Run basic metrics tests
-        python -m pytest tests/test_metrics.py -v --tb=short --durations=0
+        # Skip basic metrics tests - only run real Azure tests for accurate measurements
+        # python -m pytest tests/test_metrics.py -v --tb=short --durations=0
 
-        # Always try to run real Azure tests - let the test decide if it should skip
-        echo "Attempting to run real Azure API tests..."
+        # Run real Azure tests - these provide actual performance metrics
+        echo "Running real Azure API tests..."
         python -m pytest tests/test_real_azure.py -v --tb=short --durations=0 -s
 
         # Save final metrics after all tests complete

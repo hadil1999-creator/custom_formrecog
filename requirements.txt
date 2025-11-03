@@ -6,4 +6,4 @@ azure-functions
 requests
 pybase64
 pytest
-azure-ai-formrecognizer==3.2.0b5
+azure-ai-formrecognizer
