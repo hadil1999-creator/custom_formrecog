@@ -57,10 +57,13 @@ class TestRealAzureMetrics(unittest.TestCase):
         metrics_collector.record_api_latency(latency)
         metrics_collector.increment_request_count()
 
+        print(f"API latency: {latency:.4f} seconds")
         print(f"Real Azure API latency: {latency:.4f} seconds")
 
         # Calculate cost based on actual API call (assume 5 pages per document)
         metrics_collector.calculate_cost(5)
+
+        print(f"Current metrics after this test - requests: {metrics_collector.metrics['request_count']}, avg_latency: {sum(metrics_collector.metrics['api_latencies'])/len(metrics_collector.metrics['api_latencies']) if metrics_collector.metrics['api_latencies'] else 0:.4f}")
 
         # Verify response structure
         self.assertEqual(output["recordId"], "real-test-1")
@@ -88,6 +91,7 @@ class TestRealAzureMetrics(unittest.TestCase):
             metrics_collector.record_api_latency(latency)
             metrics_collector.increment_request_count()
 
+            print(f"API latency: {latency:.4f} seconds")
             print(f"Document {i+1} latency: {latency:.4f} seconds")
 
         total_end_time = time.time()
@@ -100,6 +104,8 @@ class TestRealAzureMetrics(unittest.TestCase):
         print(f"Processed {document_count} documents in {total_time:.4f} seconds")
         print(f"Average time per document: {total_time/document_count:.4f} seconds")
         print(f"Total estimated cost: ${metrics_collector.metrics['total_cost']:.4f}")
+
+        print(f"Final metrics after all tests - requests: {metrics_collector.metrics['request_count']}, avg_latency: {sum(metrics_collector.metrics['api_latencies'])/len(metrics_collector.metrics['api_latencies']) if metrics_collector.metrics['api_latencies'] else 0:.4f}")
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
