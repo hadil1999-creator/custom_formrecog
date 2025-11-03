@@ -72,7 +72,7 @@ def read(endpoint, key, recordId, data):
 
 import logging
 import json
-from azure.functions as func
+import azure.functions as func
 import base64
 from azure.ai.formrecognizer import DocumentAnalysisClient
 from azure.core.credentials import AzureKeyCredential
