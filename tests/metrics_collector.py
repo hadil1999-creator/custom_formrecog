@@ -1,8 +1,6 @@
 import time
 import json
 import os
-from azure.monitor.query import LogsQueryClient
-from azure.identity import DefaultAzureCredential
 
 class MetricsCollector:
     def __init__(self):
@@ -42,34 +40,15 @@ class MetricsCollector:
 
     def get_azure_usage_cost(self, subscription_id=None):
         """
-        Query Azure Monitor for actual usage costs
-        This would require proper Azure authentication and permissions
+        Placeholder for Azure Monitor cost querying
+        This would require additional Azure SDK dependencies and proper authentication
+        For now, returns 0.0 as the actual implementation is complex and requires:
+        - azure-monitor-query
+        - azure-identity
+        - Proper Azure permissions and setup
         """
-        try:
-            if subscription_id:
-                credential = DefaultAzureCredential()
-                client = LogsQueryClient(credential)
-
-                # Query for Form Recognizer usage in the last 24 hours
-                query = """
-                AzureMetrics
-                | where MetricName == "TotalCalls" or MetricName == "TotalTransactions"
-                | where ResourceProvider == "MICROSOFT.COGNITIVESERVICES"
-                | where OperationName contains "FormRecognizer"
-                | summarize TotalCalls = sum(Total) by bin(TimeGenerated, 1h)
-                | order by TimeGenerated desc
-                """
-
-                # Note: This is a placeholder - actual implementation would require
-                # proper Azure Monitor setup and permissions
-                print("Azure usage query would be executed here")
-                return 0.0
-            else:
-                print("No subscription ID provided for Azure cost query")
-                return 0.0
-        except Exception as e:
-            print(f"Error querying Azure costs: {e}")
-            return 0.0
+        print("Azure usage cost query not implemented - requires additional setup")
+        return 0.0
 
     def get_summary(self):
         summary = {
