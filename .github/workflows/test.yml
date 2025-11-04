@@ -46,7 +46,7 @@ jobs:
         python - <<'EOF'
         import os, json
         import azure.functions as func
-        from latestocr import __init__ as app
+        import latestocr.__init__ as app
 
         # Set environment variables
         os.environ["FR_ENDPOINT"] = os.getenv("FR_ENDPOINT", "https://example.cognitiveservices.azure.com/")
