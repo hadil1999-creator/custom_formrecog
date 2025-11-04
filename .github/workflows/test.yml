@@ -40,4 +40,41 @@ jobs:
     - name: Run init file
       run: |
         python latestocr/__init__.py
+
+    - name: Test Azure Function main()
+      run: |
+        python - <<'EOF'
+        import os, json
+        import azure.functions as func
+        from latestocr import __init__ as app
+
+        # Set environment variables
+        os.environ["FR_ENDPOINT"] = os.getenv("FR_ENDPOINT", "https://example.cognitiveservices.azure.com/")
+        os.environ["FR_ENDPOINT_KEY"] = os.getenv("FR_ENDPOINT_KEY", "fake-key")
+
+        # Create test request
+        test_data = {
+            "values": [
+                {
+                    "recordId": "1",
+                    "data": {
+                        "Url": "aHR0cHM6Ly9leGFtcGxlLmNvbS9kb2MucGRm",
+                        "SasToken": "?sv=fake"
+                    }
+                }
+            ]
+        }
+
+        req = func.HttpRequest(
+            method="POST",
+            url="/api/ocr",
+            body=json.dumps(test_data).encode('utf-8')
+        )
+
+        # Call the main function
+        resp = app.main(req)
+        print("Status:", resp.status_code)
+        print("Body:", resp.get_body().decode())
+        EOF
+
   
