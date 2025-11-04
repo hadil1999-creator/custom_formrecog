@@ -54,7 +54,10 @@ jobs:
 
         # Split URL into base path and SAS token
         url, token = sas_url.split("?", 1)
-        print(url, token)
+         # Split into URL and token
+        url, token = sas_url.split("?", 1)
+        print("Base URL:", url)
+        print("SAS Token:", token[:50] + "...")  # Just to confirm split worked
         # Force correct base64 padding (multiple of 4)
         encoded_url = base64.b64encode(url.encode("utf-8")).decode("utf-8")
         while len(encoded_url) % 4 != 0:
