@@ -50,7 +50,7 @@ jobs:
         os.environ["FR_ENDPOINT_KEY"] = os.getenv("FR_ENDPOINT_KEY", "fake-key")
 
         # SAS URL of your blob file
-        sas_url = "https://hadil.blob.core.windows.net/hadil/Hadil-BEN-AMOR-resume_updated.pdf?sp=r&st=2025-11-04T00:29:59Z&se=2025-11-04T08:44:59Z&spr=https&sv=2024-11-04&sr=b&sig=bdDrXrMBxJggHaKNcWm064s0ySjWszEuSh3%2FMFk6c%3D"
+        sas_url = "https://hadil.blob.core.windows.net/hadil/Hadil-BEN-AMOR-resume_updated.pdf?sp=r&st=2025-11-04T01:23:11Z&se=2026-02-05T09:38:11Z&sv=2024-11-04&sr=b&sig=Ul2DY94iNBZ1tcLn1j384%2BNT8JRYQnwawvqJltP9dXc%3D"
 
         # Make sure no spaces or newlines are around
         sas_url = sas_url.replace(" ", "").replace("\n", "")
