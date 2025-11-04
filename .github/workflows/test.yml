@@ -38,27 +38,21 @@ jobs:
         python -c "import latestocr.__init__; print('Imports successful')"
 
 
-    - name: Test Azure Function main()
+    - name: Test Azure Function main with service call count
       run: |
         python - <<'EOF'
         import os, json, base64, time
         import azure.functions as func
         import latestocr.__init__ as app
 
-        # === Environment Setup ===
+        # Set environment variables
         os.environ["FR_ENDPOINT"] = os.getenv("FR_ENDPOINT", "https://example.cognitiveservices.azure.com/")
         os.environ["FR_ENDPOINT_KEY"] = os.getenv("FR_ENDPOINT_KEY", "fake-key")
 
-        # SAS URL of your blob file
+        # SAS URL
         sas_url = "https://hadil.blob.core.windows.net/hadil/Hadil-BEN-AMOR-resume_updated.pdf?sp=r&st=2025-11-04T01:23:11Z&se=2026-02-05T09:38:11Z&sv=2024-11-04&sr=b&sig=Ul2DY94iNBZ1tcLn1j384%2BNT8JRYQnwawvqJltP9dXc%3D"
         sas_url = sas_url.replace(" ", "").replace("\n", "")
-
-        # === Split and encode URL ===
-        if "?" in sas_url:
-            url, token = sas_url.split("?", 1)
-        else:
-            raise ValueError("SAS URL missing '?' separator")
-
+        url, token = sas_url.split("?", 1)
         encoded_url = base64.b64encode(url.encode("utf-8")).decode("utf-8")
         while len(encoded_url) % 4 != 0:
             encoded_url += "="
@@ -71,34 +65,44 @@ jobs:
                         "Url": encoded_url,
                         "SasToken": "?" + token
                     }
+                },
+                {
+                    "recordId": "2",
+                    "data": {
+                        "Url": encoded_url,
+                        "SasToken": "?" + token
+                    }
                 }
             ]
         }
 
-        # === Create request ===
+        # Wrap read to count service calls
+        call_count = 0
+        original_read = app.read
+
+        def counted_read(*args, **kwargs):
+            nonlocal call_count
+            call_count += 1
+            return original_read(*args, **kwargs)
+
+        app.read = counted_read
+
+        # Create request
         req = func.HttpRequest(
             method="POST",
             url="/api/ocr",
             body=json.dumps(test_data).encode("utf-8")
         )
 
-        # === Measure test metrics ===
+        # Measure execution
         start_time = time.time()
-
         resp = app.main(req)
-
         end_time = time.time()
-        latency = end_time - start_time
-        execution_time_ms = round(latency * 1000, 2)
-        number_of_requests = 1  # since we are testing with one call
-
-        # Approximate cost if known ($0.02/page, assuming 1 page)
-        estimated_cost_usd = 0.02 * number_of_requests
 
         print("Status Code:", resp.status_code)
-        print("Response Body:", resp.get_body().decode())
-        print("---- TEST METRICS ----")
-        print(f"Requests sent: {number_of_requests}")
-        print(f"Execution time (ms): {execution_time_ms}")
-        print(f"Estimated cost (USD): {estimated_cost_usd:.4f}")
+        print("Body:", resp.get_body().decode())
+        print("---- METRICS ----")
+        print(f"Number of Azure Form Recognizer service calls: {call_count}")
+        print(f"Total execution time (s): {round(end_time - start_time, 3)}")
         EOF
+
