@@ -44,7 +44,7 @@ jobs:
     - name: Test Azure Function main()
       run: |
         python - <<'EOF'
-        import os, json
+        import os, json, base64
         import azure.functions as func
         import latestocr.__init__ as app
 
@@ -52,14 +52,26 @@ jobs:
         os.environ["FR_ENDPOINT"] = os.getenv("FR_ENDPOINT", "https://example.cognitiveservices.azure.com/")
         os.environ["FR_ENDPOINT_KEY"] = os.getenv("FR_ENDPOINT_KEY", "fake-key")
 
-        # Create test request
+        # Original SAS URL
+        sas_url = "https://hadil.blob.core.windows.net/hadil/Hadil-BEN-AMOR-resume_updated.pdf?sp=r&st=2025-11-04T00:29:59Z&se=2025-11-04T08:44:59Z&spr=https&sv=2024-11-04&sr=b&sig=bdDrXrMBxJggHaKNcWm064s0ySjWszEuSh3%2FMFk6c%3D"
+
+        # Split into file URL and SAS token
+        url, token = sas_url.split("?", 1)
+
+        # Base64 encode URL with proper padding
+        encoded_url = base64.b64encode(url.encode("utf-8")).decode("utf-8")
+        padding_needed = 4 - (len(encoded_url) % 4)
+        if padding_needed != 4:
+            encoded_url += "=" * padding_needed
+
+        # Build test request payload
         test_data = {
             "values": [
                 {
                     "recordId": "1",
                     "data": {
-                        "Url": "https://hadil.blob.core.windows.net/hadil/Hadil-BEN-AMOR-resume_updated.pdf",
-                        "SasToken": "?sp=r&st=2025-11-04T00:29:59Z&se=2025-11-04T08:44:59Z&spr=https&sv=2024-11-04&sr=b&sig=bdDrXrMBxJggHaKNcWm064s0ySjWszEuSh3%2FMFk6c%3D"
+                        "Url": encoded_url,
+                        "SasToken": "?" + token
                     }
                 }
             ]
@@ -76,5 +88,3 @@ jobs:
         print("Status:", resp.status_code)
         print("Body:", resp.get_body().decode())
         EOF
-
-  
