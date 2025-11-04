@@ -58,8 +58,8 @@ jobs:
                 {
                     "recordId": "1",
                     "data": {
-                        "Url": "aHR0cHM6Ly9leGFtcGxlLmNvbS9kb2MucGRm",
-                        "SasToken": "?sv=fake"
+                        "Url": "https://hadil.blob.core.windows.net/hadil/Hadil-BEN-AMOR-resume_updated.pdf",
+                        "SasToken": "?sp=r&st=2025-11-04T00:29:59Z&se=2025-11-04T08:44:59Z&spr=https&sv=2024-11-04&sr=b&sig=bdDrXrMBxJggHaKNcWm064s0ySjWszEuSh3%2FMFk6c%3D"
                     }
                 }
             ]
