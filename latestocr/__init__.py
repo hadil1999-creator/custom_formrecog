@@ -55,9 +55,11 @@ def read(endpoint, key, recordId, data):
         document_analysis_client = DocumentAnalysisClient(endpoint=endpoint, credential=AzureKeyCredential(key))
         poller = document_analysis_client.begin_analyze_document_from_url("prebuilt-read", docUrl)
         result = poller.result()
+        pages = len(result.pages)
+        estimated_cost_usd = pages * 0.02  # Assuming $0.02 per page for Azure Form Recognizer Read API
         output_record = {
             "recordId": recordId,
-            "data": {"text": result.content}
+            "data": {"text": result.content, "pages": pages, "estimated_cost_usd": estimated_cost_usd}
         }
 
     except Exception as error:
