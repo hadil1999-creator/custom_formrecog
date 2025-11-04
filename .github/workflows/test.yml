@@ -37,9 +37,6 @@ jobs:
       run: |
         python -c "import latestocr.__init__; print('Imports successful')"
 
-    - name: Run init file
-      run: |
-        python latestocr/__init__.py
 
     - name: Test Azure Function main()
       run: |
@@ -52,19 +49,18 @@ jobs:
         os.environ["FR_ENDPOINT"] = os.getenv("FR_ENDPOINT", "https://example.cognitiveservices.azure.com/")
         os.environ["FR_ENDPOINT_KEY"] = os.getenv("FR_ENDPOINT_KEY", "fake-key")
 
-        # Original SAS URL
+        # SAS URL of your blob file
         sas_url = "https://hadil.blob.core.windows.net/hadil/Hadil-BEN-AMOR-resume_updated.pdf?sp=r&st=2025-11-04T00:29:59Z&se=2025-11-04T08:44:59Z&spr=https&sv=2024-11-04&sr=b&sig=bdDrXrMBxJggHaKNcWm064s0ySjWszEuSh3%2FMFk6c%3D"
 
-        # Split into file URL and SAS token
+        # Split URL into base path and SAS token
         url, token = sas_url.split("?", 1)
-
-        # Base64 encode URL with proper padding
+        print(url, token)
+        # Force correct base64 padding (multiple of 4)
         encoded_url = base64.b64encode(url.encode("utf-8")).decode("utf-8")
-        padding_needed = 4 - (len(encoded_url) % 4)
-        if padding_needed != 4:
-            encoded_url += "=" * padding_needed
+        while len(encoded_url) % 4 != 0:
+            encoded_url += "="
 
-        # Build test request payload
+        # Build test data payload
         test_data = {
             "values": [
                 {
@@ -77,17 +73,17 @@ jobs:
             ]
         }
 
+        # Create HTTP request
         req = func.HttpRequest(
             method="POST",
             url="/api/ocr",
-            body=json.dumps(test_data).encode('utf-8')
+            body=json.dumps(test_data).encode("utf-8")
         )
 
-        # Call the main function
+        # Run the Azure Function locally
         resp = app.main(req)
         print("Status:", resp.status_code)
-        print("Test Data:", test_data)
         print("Body:", resp.get_body().decode())
         EOF
 
-        
+
