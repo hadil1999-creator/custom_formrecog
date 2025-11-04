@@ -86,5 +86,6 @@ jobs:
         # Call the main function
         resp = app.main(req)
         print("Status:", resp.status_code)
+        print("Test Data:", test_data)
         print("Body:", resp.get_body().decode())
         EOF
