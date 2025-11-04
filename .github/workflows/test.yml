@@ -45,7 +45,7 @@ jobs:
         import azure.functions as func
         import latestocr.__init__ as app
 
-        # Set environment variables
+        # Environment variables
         os.environ["FR_ENDPOINT"] = os.getenv("FR_ENDPOINT", "https://example.cognitiveservices.azure.com/")
         os.environ["FR_ENDPOINT_KEY"] = os.getenv("FR_ENDPOINT_KEY", "fake-key")
 
@@ -76,18 +76,17 @@ jobs:
             ]
         }
 
-        # Wrap read to count service calls
-        call_count = 0
+        # Use a mutable object to count calls
+        call_counter = {"count": 0}
         original_read = app.read
 
         def counted_read(*args, **kwargs):
-            nonlocal call_count
-            call_count += 1
+            call_counter["count"] += 1
             return original_read(*args, **kwargs)
 
         app.read = counted_read
 
-        # Create request
+        # Create HTTP request
         req = func.HttpRequest(
             method="POST",
             url="/api/ocr",
@@ -102,7 +101,6 @@ jobs:
         print("Status Code:", resp.status_code)
         print("Body:", resp.get_body().decode())
         print("---- METRICS ----")
-        print(f"Number of Azure Form Recognizer service calls: {call_count}")
+        print(f"Number of Azure Form Recognizer service calls: {call_counter['count']}")
         print(f"Total execution time (s): {round(end_time - start_time, 3)}")
         EOF
-
