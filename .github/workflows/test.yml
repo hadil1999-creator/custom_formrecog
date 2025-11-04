@@ -80,7 +80,7 @@ jobs:
                 }
             ]
         }
-
+        print(test_data)
         # Create HTTP request
         req = func.HttpRequest(
             method="POST",
