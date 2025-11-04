@@ -37,5 +37,7 @@ jobs:
       run: |
         python -c "import latestocr.__init__; print('Imports successful')"
 
-
+    - name: Run init file
+      run: |
+        python latestocr/__init__.py
   
