@@ -52,12 +52,17 @@ jobs:
         # SAS URL of your blob file
         sas_url = "https://hadil.blob.core.windows.net/hadil/Hadil-BEN-AMOR-resume_updated.pdf?sp=r&st=2025-11-04T00:29:59Z&se=2025-11-04T08:44:59Z&spr=https&sv=2024-11-04&sr=b&sig=bdDrXrMBxJggHaKNcWm064s0ySjWszEuSh3%2FMFk6c%3D"
 
-        # Split URL into base path and SAS token
-        url, token = sas_url.split("?", 1)
-         # Split into URL and token
-        url, token = sas_url.split("?", 1)
-        print("Base URL:", url)
-        print("SAS Token:", token[:50] + "...")  # Just to confirm split worked
+        # Make sure no spaces or newlines are around
+        sas_url = sas_url.replace(" ", "").replace("\n", "")
+
+        # Split into file URL and SAS token
+        if "?" in sas_url:
+            url, token = sas_url.split("?", 1)
+        else:
+            raise ValueError("SAS URL missing '?' separator")
+
+        print("Base URL:", repr(url))
+        print("SAS Token:", repr(token))
         # Force correct base64 padding (multiple of 4)
         encoded_url = base64.b64encode(url.encode("utf-8")).decode("utf-8")
         while len(encoded_url) % 4 != 0:
