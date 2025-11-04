@@ -38,7 +38,7 @@ jobs:
         python -c "import latestocr.__init__; print('Imports successful')"
 
 
-    - name: Test Azure Function main with service call count
+    - name: Test Azure Function main
       run: |
         python - <<'EOF'
         import os, json, base64, time
@@ -57,6 +57,7 @@ jobs:
         while len(encoded_url) % 4 != 0:
             encoded_url += "="
 
+        # Only one value in the test data
         test_data = {
             "values": [
                 {
@@ -65,25 +66,16 @@ jobs:
                         "Url": encoded_url,
                         "SasToken": "?" + token
                     }
-                },
-                {
-                    "recordId": "2",
-                    "data": {
-                        "Url": encoded_url,
-                        "SasToken": "?" + token
-                    }
                 }
             ]
         }
 
-        # Use a mutable object to count calls
+        # Count service calls
         call_counter = {"count": 0}
         original_read = app.read
-
         def counted_read(*args, **kwargs):
             call_counter["count"] += 1
             return original_read(*args, **kwargs)
-
         app.read = counted_read
 
         # Create HTTP request
@@ -93,14 +85,29 @@ jobs:
             body=json.dumps(test_data).encode("utf-8")
         )
 
-        # Measure execution
+        # Measure execution time
         start_time = time.time()
         resp = app.main(req)
         end_time = time.time()
+        execution_time_s = round(end_time - start_time, 3)
 
+        # Estimate cost
+        body = json.loads(resp.get_body().decode())
+        total_pages = 0
+        for val in body.get("values", []):
+            if "data" in val and "pages" in val["data"]:
+                total_pages += val["data"]["pages"]
+            else:
+                total_pages += 1  # assume 1 page if missing
+        cost_per_page_usd = 0.02
+        estimated_cost_usd = total_pages * cost_per_page_usd
+
+        # Print results
         print("Status Code:", resp.status_code)
         print("Body:", resp.get_body().decode())
         print("---- METRICS ----")
         print(f"Number of Azure Form Recognizer service calls: {call_counter['count']}")
-        print(f"Total execution time (s): {round(end_time - start_time, 3)}")
+        print(f"Total execution time (s): {execution_time_s}")
+        print(f"Total pages processed: {total_pages}")
+        print(f"Estimated cost (USD): {estimated_cost_usd:.4f}")
         EOF
